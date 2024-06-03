@@ -4,9 +4,9 @@ import json
 import os
 
 from fastapi import APIRouter, Request, Depends, HTTPException, status
-from fastapi.responses import RedirectResponse
 from dependencies import authorize, generate_rerouter
 from dependencies.schemas import User
+from course.routes import get_course
 from starlette.datastructures import MutableHeaders
 
 dotenv.load_dotenv()
@@ -43,29 +43,33 @@ async def docs():
 @transaction_router.get("/cart")
 async def get_cart(user: User = Depends(authorize)):
     async with httpx.AsyncClient() as client:
-        resp = await client.get(
-                url = SERVICE_URL + f"/cart/{user.email}"
-            )
-        if resp.status_code != 200:
-            raise HTTPException(
-                status_code=resp.status_code,
-                detail=resp.json()['message']
-            )
-        else:
-            course_ids = resp.json()["courses_in_cart"]
-
-            course_responses = []
-            for course_id in course_ids:
-                resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"/detail/{int(course_id)}"
+        try:
+            resp = await client.get(
+                    url = SERVICE_URL + f"/transaction/cart/{user.email}"
                 )
-                if resp.status_code != 200:
-                    raise HTTPException(
-                        status_code=resp.status_code,
-                        detail=resp.json()['detail']
+            if resp.status_code != 200:
+                raise HTTPException(
+                    status_code=resp.status_code,
+                    detail=resp.json()['message']
+                )
+            else:
+                courses = resp.json()["courses_in_cart"]
+
+                course_responses = []
+                for course in courses:
+                    resp = await client.get(
+                        url = COURSE_SERVICE_URL + f"/detail/{int(course["course_id"])}"
                     )
-                else:
-                    course_responses.append(resp.json)
+                    if resp.status_code != 200:
+                        raise HTTPException(
+                            status_code=resp.status_code,
+                            detail=resp.json()['detail']
+                        )
+                    else:
+                        course_responses.append(resp.json)
+        except Exception as e:
+            print(e)
+    
 
                 
 
@@ -76,7 +80,7 @@ async def get_cart(user: User = Depends(authorize)):
 async def get_owned_courses(user: User = Depends(authorize)):
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-                url = SERVICE_URL + f"/course_owned/{user.email}"
+                url = SERVICE_URL + f"/transaction/course_owned/{user.email}"
             )
         if resp.status_code != 200:
             raise HTTPException(
@@ -84,12 +88,12 @@ async def get_owned_courses(user: User = Depends(authorize)):
                 detail=resp.json()['message']
             )
         else:
-            course_ids = resp.json()["course_list"]
+            courses = resp.json()["course_list"]
 
             course_responses = []
-            for course_id in course_ids:
+            for course in courses:
                 resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"/detail/{int(course_id)}"
+                    url = COURSE_SERVICE_URL + f"/detail/{int(course["course_id"])}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(
@@ -103,7 +107,7 @@ async def get_owned_courses(user: User = Depends(authorize)):
 async def get_transaction_list(user: User = Depends(authorize)):
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-                url = SERVICE_URL + f"/{user.email}"
+                url = SERVICE_URL + f"transaction/{user.email}"
             )
         if resp.status_code != 200:
             raise HTTPException(
@@ -127,7 +131,8 @@ async def create(request: Request, user: User = Depends(authorize)):
     
         request._headers = mutable_headers
         request.scope.update(headers=mutable_headers.raw)
-    except json.JSONDecodeError:
+    except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Request body is not a valid JSON"
@@ -150,7 +155,7 @@ async def create(request: Request, user: User = Depends(authorize)):
         
             if transaction_type == "CART": # else would be SINGLE
                 resp = await client.get(
-                    url = SERVICE_URL + f"/course_owned/{user.email}"
+                    url = SERVICE_URL + f"/transaction/course_owned/{user.email}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(
@@ -158,13 +163,13 @@ async def create(request: Request, user: User = Depends(authorize)):
                         detail=resp.json()['message']
                     )
                 else:
-                    course_ids = resp.json()["course_list"]
+                    courses = resp.json()["course_list"]
 
                     course_responses = []
                     total_price = 0
-                    for course_id in course_ids:
+                    for course in courses:
                         resp = await client.get(
-                            url = COURSE_SERVICE_URL + f"/detail/{int(course_id)}"
+                            url = COURSE_SERVICE_URL + f"/detail/{int(course["course_id"])}"
                         )
                         if resp.status_code != 200:
                             raise HTTPException(
