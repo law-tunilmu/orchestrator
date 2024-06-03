@@ -24,6 +24,20 @@ async def rerouter(request: Request):
     return await generate_rerouter(SERVICE_URL, request)
 
 
+from fastapi.openapi.docs import (
+    get_swagger_ui_html
+)
+
+@transaction_router.get("/docs", description="Transaction Service Documentation")
+async def docs():
+    return get_swagger_ui_html(
+        openapi_url=f"{SERVICE_URL}/openapi.json",
+        title= transaction_router.tags[0] + " - Swagger UI",
+        oauth2_redirect_url=f"{SERVICE_URL}/docs/oauth2-redirect",
+        swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
+        swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
+    )
+
 # --- Endpoints for the microservice rerouting ---
 
 @transaction_router.get("/cart")
