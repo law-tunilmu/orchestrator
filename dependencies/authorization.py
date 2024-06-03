@@ -19,8 +19,7 @@ async def authorize(authorization: str | None = Header(default=None)) -> User:
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.get(
-                # os.environ["AUTH_BE"] + "/users/me",
-                "http://localhost:8002" + "/users/me",
+                os.environ["AUTH_BE"] + "/users/me",
                 headers={
                     "Authorization": authorization
                 }
