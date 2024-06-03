@@ -1,5 +1,5 @@
 # Use the official Python base image
-FROM python:3.11-slim
+FROM python:3.9-slim
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -20,22 +20,14 @@ EXPOSE 8800
 ARG PRODUCTION
 ARG AUTH_BE
 ARG TRANSACTION_BE
-
 ARG COURSE_BE
 ARG FORUM_BE
 
-ARG AUTH_BE
-
 # set environment variables
 ENV PRODUCTION=${PRODUCTION}
-
 ENV AUTH_BE=${AUTH_BE}
 ENV TRANSACTION_BE=${TRANSACTION_BE}
-
 ENV COURSE_BE=${COURSE_BE}
 ENV FORUM_BE=${FORUM_BE}
-
-ENV AUTH_BE=${AUTH_BE}
-
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8800"]
