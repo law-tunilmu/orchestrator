@@ -37,7 +37,7 @@ jobs:
               TRANSACTION_BE=${{ secrets.TRANSACTION_BE }}
               COURSE_BE=${{ secrets.COURSE_BE }}
               FORUM_BE=${{ secrets.FORUM_BE }}
-            tags: voizcack/orchestrator:latest # ganti voizcrack dgn username dockerhub mu
+            tags: adrianramadhan27/${{ secrets.IMAGE_NAME }}:latest # ganti voizcrack dgn username dockerhub mu
 
     deploy:
         runs-on: ubuntu-latest
