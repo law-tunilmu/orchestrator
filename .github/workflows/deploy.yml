@@ -37,7 +37,7 @@ jobs:
               TRANSACTION_BE=${{ secrets.TRANSACTION_BE }}
               COURSE_BE=${{ secrets.COURSE_BE }}
               FORUM_BE=${{ secrets.FORUM_BE }}
-            tags: voizcack/${{ secrets.IMAGE_NAME }}:latest # ganti voizcrack dgn username dockerhub mu
+            tags: voizcack/orchestrator:latest # ganti voizcrack dgn username dockerhub mu
 
     deploy:
         runs-on: ubuntu-latest
@@ -54,4 +54,4 @@ jobs:
               script: |
                 docker container rm -f ${{ secrets.CONTAINER_NAME }} || true
                 docker image rm -f ${{ secrets.DOCKERHUB_USER }}/${{ secrets.IMAGE_NAME }}:latest || true
-                docker run --name ${{ secrets.CONTAINER_NAME }} -d -p 8800:8800 ${{ secrets.DOCKERHUB_USER }}/${{ secrets.IMAGE_NAME }}:latest
+                docker run --name ${{ secrets.CONTAINER_NAME }} -d -p 8811:8800 ${{ secrets.DOCKERHUB_USER }}/${{ secrets.IMAGE_NAME }}:latest
