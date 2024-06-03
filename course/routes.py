@@ -1,14 +1,16 @@
 import httpx
-import pydantic
+import dotenv
 import json
 import os
 
 from fastapi import APIRouter, Request, Depends, HTTPException, status
+from fastapi.responses import RedirectResponse
 from dependencies import authorize, generate_rerouter
 from dependencies.schemas import User, USER_ROLES
 from starlette.datastructures import MutableHeaders
 from .schemas import Course, CourseFromUser
 
+dotenv.load_dotenv()
 SERVICE_URL = os.environ["COURSE_BE"]
 
 course_router = APIRouter(
@@ -33,9 +35,19 @@ async def get_course(id: int, request: Request) -> Course:
         else:
             return Course.model_validate(resp.json())
 
-@course_router.get("/docs")
-async def docs(result = Depends(rerouter)):
-    return result
+from fastapi.openapi.docs import (
+    get_swagger_ui_html
+)
+
+@course_router.get("/docs", description="Course Service Documentation")
+async def docs():
+    return get_swagger_ui_html(
+        openapi_url=f"{SERVICE_URL}/openapi.json",
+        title= course_router.tags[0] + " - Swagger UI",
+        oauth2_redirect_url=f"{SERVICE_URL}/docs/oauth2-redirect",
+        swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
+        swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
+    )
 
 @course_router.get("/list")
 async def list(result = Depends(rerouter)):
