@@ -8,6 +8,7 @@ class USER_ROLES(Enum):
 
 class User(BaseModel):
     username: str
+    email: str
     role: str
 
     class Config:
