@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from .schemas import User
 
 async def authorize(authorization: str | None = Header(default=None)) -> User:
-    # dotenv.load_dotenv()
+    dotenv.load_dotenv()
 
     if not authorization:
         raise HTTPException(
