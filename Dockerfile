@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Expose the port on which the application will run
-EXPOSE 8888
+EXPOSE 8811
 
 # Set environment variables
 ARG PRODUCTION
@@ -30,4 +30,4 @@ ENV TRANSACTION_BE=${TRANSACTION_BE}
 ENV COURSE_BE=${COURSE_BE}
 ENV FORUM_BE=${FORUM_BE}
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8811"]
