@@ -28,6 +28,7 @@ from fastapi.openapi.docs import (
     get_swagger_ui_html
 )
 
+# DONE
 @transaction_router.get("/docs", description="Transaction Service Documentation")
 async def docs():
     return get_swagger_ui_html(
@@ -39,7 +40,7 @@ async def docs():
     )
 
 # --- Endpoints for the microservice rerouting ---
-
+# DONE
 @transaction_router.get("/cart")
 async def get_cart(user: User = Depends(authorize)):
     async with httpx.AsyncClient() as client:
@@ -58,7 +59,7 @@ async def get_cart(user: User = Depends(authorize)):
                 course_responses = []
                 for course in courses:
                     resp = await client.get(
-                        url = COURSE_SERVICE_URL + f"/detail/{int(course["course_id"])}"
+                        url = COURSE_SERVICE_URL + f"/course/detail/{int(course["course_id"])}"
                     )
                     if resp.status_code != 200:
                         raise HTTPException(
@@ -66,16 +67,19 @@ async def get_cart(user: User = Depends(authorize)):
                             detail=resp.json()['detail']
                         )
                     else:
-                        course_responses.append(resp.json)
+                        print(resp.json())
+
+                        course_responses.append(resp.json())
         except Exception as e:
             print(e)
+        return course_responses
     
 
                 
 
 
 
-        
+# DONE    
 @transaction_router.get("/course_owned")
 async def get_owned_courses(user: User = Depends(authorize)):
     async with httpx.AsyncClient() as client:
@@ -93,7 +97,7 @@ async def get_owned_courses(user: User = Depends(authorize)):
             course_responses = []
             for course in courses:
                 resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"/detail/{int(course["course_id"])}"
+                    url = COURSE_SERVICE_URL + f"/course/detail/{int(course["course_id"])}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(
@@ -101,13 +105,15 @@ async def get_owned_courses(user: User = Depends(authorize)):
                         detail=resp.json()['detail']
                     )
                 else:
-                    course_responses.append(resp.json)
-        
+                    course_responses.append(resp.json())
+        return course_responses
+
+# DONE 
 @transaction_router.get("/")
 async def get_transaction_list(user: User = Depends(authorize)):
     async with httpx.AsyncClient() as client:
         resp = await client.get(
-                url = SERVICE_URL + f"transaction/{user.email}"
+                url = SERVICE_URL + f"/transaction/{user.email}"
             )
         if resp.status_code != 200:
             raise HTTPException(
@@ -115,7 +121,45 @@ async def get_transaction_list(user: User = Depends(authorize)):
                 detail=resp.json()['message']
             )
         else:
-            return resp.json
+            return resp.json()
+
+# DONE
+@transaction_router.get("/status/{id}")
+async def get_transaction_list(id: str, user: User = Depends(authorize)):
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+                url = SERVICE_URL + f"/transaction/status/{id}"
+            )
+        if resp.status_code != 200:
+            raise HTTPException(
+                status_code=resp.status_code,
+                detail=resp.json()['message']
+            )
+        else:
+            transaction = resp.json()["transaction_status"]
+            if transaction["email"] != user.email:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="You can not view this transaction"
+                )
+            course_ids = transaction["course_ids"]
+            course_responses = []
+            for course_id in course_ids:
+                resp = await client.get(
+                    url = COURSE_SERVICE_URL + f"/course/detail/{int(course_id)}"
+                )
+                if resp.status_code != 200:
+                    raise HTTPException(
+                        status_code=resp.status_code,
+                        detail=resp.json()['detail']
+                    )
+                else:
+                    course_responses.append(resp.json())
+            transaction["course_list"] = course_responses
+
+            return transaction
+
+
 
 
 @transaction_router.post("/cart/add")
@@ -124,6 +168,7 @@ async def create(request: Request, user: User = Depends(authorize)):
     try:
         body_dict: dict = json.loads(body)
         body_dict["email"] = user.email
+        body_dict["course_id"] = str(body_dict["course_id"])
         request._body = json.dumps(body_dict).encode()
 
         mutable_headers = MutableHeaders(request._headers)
@@ -169,7 +214,7 @@ async def create(request: Request, user: User = Depends(authorize)):
                     total_price = 0
                     for course in courses:
                         resp = await client.get(
-                            url = COURSE_SERVICE_URL + f"/detail/{int(course["course_id"])}"
+                            url = COURSE_SERVICE_URL + f"/course/detail/{int(course["course_id"])}"
                         )
                         if resp.status_code != 200:
                             raise HTTPException(
@@ -177,7 +222,7 @@ async def create(request: Request, user: User = Depends(authorize)):
                                 detail=resp.json()['detail']
                             )
                         else:
-                            course_responses.append(resp.json)
+                            course_responses.append(resp.json())
                             total_price += resp.json()["price"]
                     body_dict["item_details"] = [
                         {
@@ -194,7 +239,7 @@ async def create(request: Request, user: User = Depends(authorize)):
             else:
                 course_id = body_dict.get("id")
                 resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"/detail/{int(course_id)}"
+                    url = COURSE_SERVICE_URL + f"course/detail/{int(course_id)}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(

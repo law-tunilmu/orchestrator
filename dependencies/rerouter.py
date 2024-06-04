@@ -4,11 +4,15 @@ import httpx
 
 async def generate_rerouter(microservice_url: str, request: Request):
     path = request.url.path
+    # print(path)
     queries = request.query_params._dict
     headers = request.headers.raw
     cookies = request.cookies
     method = request.method
     body = await request.body()
+    # print(body)
+
+    # print(microservice_url+path)
 
     async with httpx.AsyncClient() as client:
         resp = await client.request(
