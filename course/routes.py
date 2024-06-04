@@ -42,9 +42,9 @@ from fastapi.openapi.docs import (
 @course_router.get("/docs", description="Course Service Documentation")
 async def docs():
     return get_swagger_ui_html(
-        openapi_url=f"{SERVICE_URL}/openapi.json",
+        openapi_url="https://course.tunilmu.com/openapi.json",
         title= course_router.tags[0] + " - Swagger UI",
-        oauth2_redirect_url=f"{SERVICE_URL}/docs/oauth2-redirect",
+        oauth2_redirect_url="https://course.tunilmu.com/docs/oauth2-redirect",
         swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
         swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
     )
