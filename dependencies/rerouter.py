@@ -13,8 +13,8 @@ async def generate_rerouter(microservice_url: str, request: Request):
     # print(body)
 
     # print(microservice_url+path)
-
-    async with httpx.AsyncClient() as client:
+    timeout = httpx.Timeout(20.0, read=20.0) 
+    async with httpx.AsyncClient(timeout=timeout) as client:
         resp = await client.request(
             method = method,
             url = microservice_url + path,
