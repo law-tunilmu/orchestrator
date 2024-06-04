@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import course.routes
 import transaction.routes
+import forum.routes
 import uvicorn
 import dotenv
 import os
@@ -18,6 +19,7 @@ app.add_middleware(
 
 app.include_router(course.routes.course_router)
 app.include_router(transaction.routes.transaction_router)
+app.include_router(forum.routes.forum_router)
 
 dotenv.load_dotenv()
 if (not os.environ.get("PRODUCTION")) and (__name__ == "__main__"):
