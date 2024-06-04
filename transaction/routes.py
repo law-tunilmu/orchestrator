@@ -58,8 +58,9 @@ async def get_cart(user: User = Depends(authorize)):
 
                 course_responses = []
                 for course in courses:
+                    course_id = course["course_id"]
                     resp = await client.get(
-                        url = COURSE_SERVICE_URL + f"/course/detail/{int(course["course_id"])}"
+                        url = COURSE_SERVICE_URL + f"/course/detail/{course_id}"
                     )
                     if resp.status_code != 200:
                         raise HTTPException(
@@ -96,8 +97,9 @@ async def get_owned_courses(user: User = Depends(authorize)):
 
             course_responses = []
             for course in courses:
+                course_id = course["course_id"]
                 resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"/course/detail/{int(course["course_id"])}"
+                    url = COURSE_SERVICE_URL + f"/course/detail/{course_id}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(
@@ -146,7 +148,7 @@ async def get_transaction_list(id: str, user: User = Depends(authorize)):
             course_responses = []
             for course_id in course_ids:
                 resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"/course/detail/{int(course_id)}"
+                    url = COURSE_SERVICE_URL + f"/course/detail/{course_id}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(
@@ -213,8 +215,10 @@ async def create(request: Request, user: User = Depends(authorize)):
                     course_responses = []
                     total_price = 0
                     for course in courses:
+                        course_id = course["course_id"]
+
                         resp = await client.get(
-                            url = COURSE_SERVICE_URL + f"/course/detail/{int(course["course_id"])}"
+                            url = COURSE_SERVICE_URL + f"/course/detail/{course_id}"
                         )
                         if resp.status_code != 200:
                             raise HTTPException(
@@ -239,7 +243,7 @@ async def create(request: Request, user: User = Depends(authorize)):
             else:
                 course_id = body_dict.get("id")
                 resp = await client.get(
-                    url = COURSE_SERVICE_URL + f"course/detail/{int(course_id)}"
+                    url = COURSE_SERVICE_URL + f"course/detail/{course_id}"
                 )
                 if resp.status_code != 200:
                     raise HTTPException(
